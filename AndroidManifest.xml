@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="org.papamitra.locationalarm"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <application android:label="@string/app_name" android:icon="@drawable/icon">
+        <activity android:name="LocationAlarms"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+	<uses-library android:name="com.google.android.maps"></uses-library>
+<activity android:name="SetAlarm" android:label="@string/set_alarm"></activity>    
+<activity android:name="LocationPicker" android:label="@string/location_picker"></activity>
+<service android:name="AlarmService"></service>
+
+        <receiver android:name="AlarmInitReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+<provider android:name="LocationAlarmProvider" android:authorities="org.papamitra.locationalarm"></provider>
+<activity android:name="AlarmAlert"
+	  android:label="@string/alarm_alert"
+	  android:theme="@style/alarm_alert"
+	  />
+</application>
+<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+</manifest> 

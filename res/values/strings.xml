@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="location_picker">Location Picker</string>
+    <string name="set_alarm">Set Alarm</string>
+    <string name="location_pref">Location</string>
+    <string name="label_pref">Label</string>
+    <string name="app_name">LocationAlarm</string>
+<string name="map_ok">OK</string>
+<string name="map_cancel">Cancel</string>
+<string name="done">Done</string>
+<string name="revert">Revert</string>
+<string name="alarm_alert_dismiss_text">Alert Stop</string>
+<string name="alarm_alert">Alert</string>
+</resources>
