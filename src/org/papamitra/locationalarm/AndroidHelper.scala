@@ -44,6 +44,13 @@ object AndroidHelper {
       new CursorIter(cur)
     }
 
+  def using[A <: {def close(): Unit}, B](param:A)(f: A=>B):B=
+    try{
+      f(param)
+    }finally{
+      param.close()
+    }
+
   // onActivityResult Helper
   trait ActivityResultTrait extends android.app.Activity {
     import android.content.Intent
