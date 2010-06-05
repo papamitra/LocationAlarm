@@ -45,19 +45,21 @@ class AlarmService extends Service with LocationListener{
     Alarms.disableAlert(this)
 
     if(mAlarms.filter(_.enabled).isEmpty){
-	stopSelf()
-	return Service.START_NOT_STICKY
+      Log.i(TAG, "No Alarm Enabled")
+      stopSelf()
+      return Service.START_NOT_STICKY
     }
 
     if(mAlarms.filter(_.isActiveAt(System.currentTimeMillis)).isEmpty){
-	val minNextMillis = mAlarms.map(Alarms.calculateNextMillis(_)).reduceLeft(Math.min(_,_))
-	if (minNextMillis - System.currentTimeMillis < MIN_TIME * 2){
-	  return Service.START_STICKY
-	}else{
-	  Alarms.enableAlert(this,minNextMillis)
-	  stopSelf()
-	  return Service.START_NOT_STICKY
-	}
+      Log.i(TAG, "No Alarm Enabled")
+      val minNextMillis = mAlarms.map(Alarms.calculateNextMillis(_)).reduceLeft(Math.min(_,_))
+      if (minNextMillis - System.currentTimeMillis < MIN_TIME * 2){
+	return Service.START_STICKY
+      }else{
+	Alarms.enableAlert(this,minNextMillis)
+	stopSelf()
+	return Service.START_NOT_STICKY
+      }
     }
     
     return Service.START_STICKY
@@ -93,15 +95,16 @@ class AlarmService extends Service with LocationListener{
   }
     
   def disabledAlarm(alarm:Alarm) {
-    alarm.ttl match {
-      case Some(_) =>
+    alarm.ttlenabled match {
+      case true =>
 	Alarms.updateAlarm(this, alarm, Alarms.calculateNextMillis(alarm))
-      case _ =>
+      case false =>
 	Alarms.enabledAlarm(this, alarm, false)
     }
   }
 
   override def onLocationChanged(location:Location){
+    Log.i(TAG, format("onLocationChanged (%f, %f)", location.getLatitude, location.getLongitude))
     checkAlert(location)
     startService(new Intent(this, classOf[AlarmService]))
   }
