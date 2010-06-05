@@ -2,10 +2,10 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_height="wrap_content" android:layout_width="fill_parent">
-<LinearLayout android:id="@+id/LinearLayout01" android:layout_height="fill_parent" android:layout_weight="1" android:layout_width="fill_parent"><LinearLayout android:id="@+id/LinearLayout02" android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"><TextView android:gravity="center_vertical|left" android:layout_width="fill_parent" android:textStyle="bold" android:textSize="24sp" android:layout_height="fill_parent" android:layout_weight="1" android:id="@+id/list_label" android:text="Label"></TextView><TextView android:layout_width="fill_parent" android:text="address" android:textSize="13sp" android:id="@+id/list_address" android:layout_height="wrap_content"></TextView>
+<LinearLayout android:id="@+id/LinearLayout01" android:layout_height="fill_parent" android:layout_width="fill_parent" android:layout_weight="1"><LinearLayout android:id="@+id/LinearLayout02" android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"><TextView android:gravity="center_vertical|left" android:layout_width="fill_parent" android:textStyle="bold" android:textSize="24sp" android:layout_height="fill_parent" android:layout_weight="1" android:id="@+id/list_label" android:text="Label"></TextView><TextView android:layout_width="fill_parent" android:text="address" android:textSize="13sp" android:id="@+id/list_address" android:layout_height="wrap_content"></TextView>
 </LinearLayout>
 </LinearLayout>
-<CheckBox android:focusable="false" android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/list_enabled" android:layout_weight="0"></CheckBox>
+<CheckBox android:focusable="false" android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/list_enabled"></CheckBox>
 
 
 

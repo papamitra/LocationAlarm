@@ -24,6 +24,12 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name="AlarmReceiver">
+            <intent-filter>
+                <action android:name="org.papamitra.locationalarm.ALARM_ACTIVE" />
+            </intent-filter>
+        </receiver>
+	
 <provider android:name="LocationAlarmProvider" android:authorities="org.papamitra.locationalarm"></provider>
 <activity android:name="AlarmAlert"
 	  android:label="@string/alarm_alert"

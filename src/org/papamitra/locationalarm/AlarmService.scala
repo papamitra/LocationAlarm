@@ -11,6 +11,11 @@ import Define._
 
 class AlarmService extends Service with LocationListener{
 
+  var mAlarms:Array[Alarm] = _
+
+  val MIN_TIME:Int = 60 * 1000 // 1分
+  val MIN_DISTANCE:Int = 0
+
   private lazy val alertReceiver = new BroadcastReceiver(){
     override def onReceive(context:Context, intent:Intent){
       val alarmAlert = new Intent(context, classOf[AlarmAlert])
@@ -24,10 +29,8 @@ class AlarmService extends Service with LocationListener{
   
   override def onCreate(){
     super.onCreate()
-    val minTime = 0
-    val minDistance = 0
     val locationManager = getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
-    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, this)
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this)
 
     registerReceiver(alertReceiver, new IntentFilter(Alarms.ALERT_START))
 
@@ -37,11 +40,26 @@ class AlarmService extends Service with LocationListener{
   override def onStartCommand(intent:Intent, flags:Int, startId:Int):Int = {
     Log.i(TAG, "AlarmService.onStartCommand id = " + startId)
 
-    if (Alarms.getAllAlarm(getContentResolver).filter(_.enabled).isEmpty){
-      stopSelf()
-      return Service.START_NOT_STICKY
+    mAlarms = Alarms.getAllAlarm(getContentResolver).toArray
+
+    Alarms.disableAlert(this)
+
+    if(mAlarms.filter(_.enabled).isEmpty){
+	stopSelf()
+	return Service.START_NOT_STICKY
     }
-      
+
+    if(mAlarms.filter(_.isActiveAt(System.currentTimeMillis)).isEmpty){
+	val minNextMillis = mAlarms.map(Alarms.calculateNextMillis(_)).reduceLeft(Math.min(_,_))
+	if (minNextMillis - System.currentTimeMillis < MIN_TIME * 2){
+	  return Service.START_STICKY
+	}else{
+	  Alarms.enableAlert(this,minNextMillis)
+	  stopSelf()
+	  return Service.START_NOT_STICKY
+	}
+    }
+    
     return Service.START_STICKY
   }
 
@@ -56,8 +74,9 @@ class AlarmService extends Service with LocationListener{
     super.onDestroy()
   }
 
-  override def onLocationChanged(location:Location){
-    for(alarm <- Alarms.getAllAlarm(getContentResolver).filter(_.enabled)){
+  def checkAlert(location:Location){
+    for(alarm <- Alarms.getAllAlarm(getContentResolver)
+			.filter(_.isActiveAt(System.currentTimeMillis))){
       val result = Array[Float](1)
       Location.distanceBetween(location.getLatitude, location.getLongitude,
 			       alarm.latitude, alarm.longitude, result)
@@ -67,14 +86,24 @@ class AlarmService extends Service with LocationListener{
 	// アラート発動
 	sendBroadcast(new Intent(Alarms.ALERT_START))
 
-	// TODO:アラーム無効
-	Alarms.enabledAlarm(this, alarm, false)
+	disabledAlarm(alarm)
+
       }
     }
-
-    if (Alarms.getAllAlarm(getContentResolver).filter(_.enabled).isEmpty){
-      stopSelf()
+  }
+    
+  def disabledAlarm(alarm:Alarm) {
+    alarm.ttl match {
+      case Some(_) =>
+	Alarms.updateAlarm(this, alarm, Alarms.calculateNextMillis(alarm))
+      case _ =>
+	Alarms.enabledAlarm(this, alarm, false)
     }
+  }
+
+  override def onLocationChanged(location:Location){
+    checkAlert(location)
+    startService(new Intent(this, classOf[AlarmService]))
   }
 
   // TODO
@@ -83,4 +112,3 @@ class AlarmService extends Service with LocationListener{
   override def onStatusChanged(provider:String,status:Int,extras:Bundle){}
   
 }
-

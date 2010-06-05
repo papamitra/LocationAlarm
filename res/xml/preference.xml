@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android" android:persistent="false">
-<EditTextPreference android:persistent="false" android:title="@string/label_pref" android:key="labelPref"></EditTextPreference><Preference android:key="locationPref" android:title="@string/location_pref" android:persistent="false"></Preference>
+<EditTextPreference android:persistent="false" android:title="@string/label_pref" android:key="label"></EditTextPreference><Preference android:title="@string/location_pref" android:persistent="false" android:key="location"></Preference>
 
+
+<CheckBoxPreference android:key="ttl" android:title="@string/ttl" android:persistent="false"></CheckBoxPreference>
+<Preference android:key="start_time" android:title="@string/start_time" android:dependency="ttl" android:persistent="false"></Preference>
+<Preference android:dependency="ttl" android:persistent="false" android:title="@string/end_time" android:key="end_time"></Preference>
 </PreferenceScreen>

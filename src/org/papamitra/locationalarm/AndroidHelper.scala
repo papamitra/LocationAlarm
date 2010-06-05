@@ -18,8 +18,8 @@ object AndroidHelper {
 
   import android.preference.Preference
   import android.preference.Preference.OnPreferenceChangeListener
-  implicit def funcToPrefChanger(f:(Preference, AnyRef) => Boolean):OnPreferenceChangeListener =
-    new OnPreferenceChangeListener(){ def onPreferenceChange(p:Preference, newValue:AnyRef)=f.apply(p,newValue)}
+  implicit def funcToPrefChanger(f:(Preference, Any) => Boolean):OnPreferenceChangeListener =
+    new OnPreferenceChangeListener(){ override def onPreferenceChange(p:Preference, newValue:Any):Boolean=f.apply(p,newValue)}
 
   // Cursor helper
   import android.database.Cursor

@@ -2,7 +2,7 @@ package org.papamitra.locationalarm
 
 import android.content.Intent
 import android.os.Bundle
-import android.preference.{Preference, PreferenceActivity, EditTextPreference}
+import android.preference.{Preference, PreferenceActivity, EditTextPreference, CheckBoxPreference, PreferenceScreen}
 import android.preference.Preference.OnPreferenceClickListener
 import android.widget.Toast
 import android.util.Log
@@ -11,10 +11,13 @@ import android.view.{View, LayoutInflater}
 import android.view.ViewGroup.LayoutParams
 import android.widget.{FrameLayout,LinearLayout,Button}
 
-import org.scalaandroid.AndroidHelper._
+import org.scalaandroid.AndroidHelper.ActivityResultTrait
+import android.app.TimePickerDialog
+import android.widget.TimePicker
 
 class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 
+  import org.scalaandroid.AndroidHelper._
   import LocationPicker._
   import android.app.Activity._
   import Define._
@@ -23,7 +26,16 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   var mLongitude:Double = _
   var mAddress:String = _
 
-  var mLabel:EditTextPreference = _
+  var mStartHour:Int = _
+  var mStartMinute:Int = _
+  var mEndHour:Int = _
+  var mEndMinute:Int = _
+
+  private lazy val mLabel = findPreference("label").asInstanceOf[EditTextPreference]
+  private lazy val mStartTime = findPreference("start_time")
+  private lazy val mEndTime = findPreference("end_time")
+  private lazy val mLocation = findPreference("location")
+  private lazy val mTTL = findPreference("ttl").asInstanceOf[CheckBoxPreference]
 
   reactions += {
     case (REQUEST_LOCATION,RESULT_OK,data) =>
@@ -43,27 +55,28 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
     mLatitude = latitude
     mLongitude = longitude
     mAddress = address
-    findPreference("locationPref").setSummary(mAddress)
+    mLocation.setSummary(mAddress)
   }
 
   override def onCreate(saveInstanceState: Bundle){
     super.onCreate(saveInstanceState)
 
-    Log.i(TAG, "SetAlar.onCreate")
+    Log.i(TAG, "SetAlarm.onCreate")
 
     addPreferencesFromResource(R.xml.preference)
 
     // OK/Cancelボタンの配置
     layoutOkCancel
 
-    mLabel = findPreference("labelPref").asInstanceOf[EditTextPreference]
-    mLabel.setOnPreferenceChangeListener((p:Preference, newValue:AnyRef) => {
-      p.setSummary(newValue.asInstanceOf[String])
-      return true
+    mLabel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener(){
+      def onPreferenceChange(p:Preference, newValue:Any):Boolean={
+	mLabel.setSummary(newValue.asInstanceOf[String])
+	return true
+      }
     })
-    
+
     // PreferenceのLocationをクリックした時にMapを起動
-    findPreference("locationPref").setOnPreferenceClickListener(
+    mLocation.setOnPreferenceClickListener(
       new OnPreferenceClickListener(){
 	override def onPreferenceClick(pref: Preference):Boolean={
 	  val mapIntent = new Intent(SetAlarm.this, classOf[LocationPicker])
@@ -73,19 +86,74 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 	  return true // todo
 	}
       })
-
+    
     // TODO: AlarmID
     Alarms.getAlarm(getContentResolver, 1) match {
       case Some(alarm) => 
 	setLocationPref(alarm)
 	mLabel.setText(alarm.label)
 	mLabel.setSummary(alarm.label)
+
+	mTTL.setChecked(alarm.ttlenabled)
+	mStartHour = alarm.ttl.shour
+	mStartMinute = alarm.ttl.sminute
+	mStartTime.setSummary(format("%d:%02d", mStartHour, mStartMinute))
+
+	mEndHour = alarm.ttl.ehour
+	mEndMinute = alarm.ttl.eminute
+	mEndTime.setSummary(format("%d:%02d", mEndHour, mEndMinute))
+
       case _ => 
 	Log.e(TAG, "Failed to get Alarm id:1")
 	finish
     }
 
   }
+  
+  private val DIALOG_START_TIME = 0
+  private val DIALOG_END_TIME = 1
+
+  class TimeSetListener(val id:Int) extends TimePickerDialog.OnTimeSetListener{
+    override def onTimeSet(view:TimePicker,hourOfDay:Int,minute:Int) {
+      SetAlarm.this.setTime(id, hourOfDay, minute)
+    }
+  }
+
+  override def onCreateDialog(id:Int) = id match{
+    case DIALOG_START_TIME =>
+      new TimePickerDialog(SetAlarm.this,
+			   new TimeSetListener(id),
+			   mStartHour, mStartMinute,true)
+    case DIALOG_END_TIME =>
+      new TimePickerDialog(SetAlarm.this,
+			   new TimeSetListener(id),
+			   mEndHour, mEndMinute,true)
+  }
+
+  def setTime(id:Int, hourOfDay:Int, minute:Int){
+    id match {
+      case DIALOG_START_TIME =>
+	mStartHour = hourOfDay
+	mStartMinute = minute
+	mStartTime.setSummary(format("%d:%02d", hourOfDay,minute))
+      case DIALOG_END_TIME =>
+	mEndHour = hourOfDay
+	mEndMinute = minute
+	mEndTime.setSummary(format("%d:%02d", hourOfDay,minute))
+    }
+  }
+
+  override def onPreferenceTreeClick(preferenceScreen:PreferenceScreen, preference:Preference):Boolean = preference match {
+    case pref if pref == mStartTime =>
+      showDialog(DIALOG_START_TIME)
+      return true
+    case pref if pref == mEndTime =>
+      showDialog(DIALOG_END_TIME)
+      return true
+    case _ =>
+      Log.i(TAG, "unknown pref")
+      return true
+    }
 
   def layoutOkCancel(){
     // We have to do this to get the save/cancel buttons to highlight on
@@ -137,7 +205,10 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 		    label = mLabel.getText(),
 		    address = mAddress,
 		    latitude = mLatitude,
-		    longitude = mLongitude)
+		    longitude = mLongitude,
+		    ttlenabled = mTTL.isChecked,
+		    ttl = TTL(mStartHour,mStartMinute,mEndHour,mEndMinute),
+		    nextmillis=0)
   }
 
 }

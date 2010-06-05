@@ -26,13 +26,19 @@ class LocationAlarmProvider extends ContentProvider{
 		 "enabled INTERGER, " +
 		 "longitude REAL, " +
 		 "latitude REAL, " +
-		 "valid INTEGER);" )
+		 "valid INTEGER, " +
+	         "ttl INTEGER, " +
+		 "shour INTEGER, " +
+		 "sminute INTEGER, " +
+		 "ehour INTEGER, " +
+		 "eminute INTEGER, " +
+		 "nextmillis INTEGER);" )
 
       val insertMe = "INSERT INTO alarms " +
-      "(label, address, enabled, latitude, longitude, valid) " +
+      "(label, address, enabled, latitude, longitude, valid, ttl, shour, sminute, ehour, eminute, nextmillis) " +
       "VALUES "
 
-      db.execSQL(insertMe + "('test1','test2',1, 35.0, 136.0, 1);")
+      db.execSQL(insertMe + "('test1','test2',1, 35.0, 136.0, 1, 0, 0,0,0,0,0);")
     }
 
     override def onUpgrade(db:SQLiteDatabase, oldVersion:Int, currentVersion:Int){
@@ -79,4 +85,3 @@ class LocationAlarmProvider extends ContentProvider{
   override def delete(url:Uri, where:String, whereArgs:Array[String]):Int = 0
 
 }
-
