@@ -68,14 +68,14 @@ object Alarms{
 
 
   def getAlarm(resolver:ContentResolver, id:Int):Option[Alarm] = 
-    resolver.query(
+    using(resolver.query(
       ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI, id),
       Alarm.Columns.ALARM_QUERY_COLUMNS,
-      null, null, null) match {
+      null, null, null)) { c => c match {
       case null => None
       case c if c.moveToFirst => Some(new Alarm(c))
       case _ => None
-    }
+    }}
 
   def getAlarmsCursor(resolver:ContentResolver) = 
     resolver.query(
@@ -84,10 +84,10 @@ object Alarms{
 		null, null, null)
 
   def getAllAlarm(resolver:ContentResolver) = 
-    resolver.query(
+    using(resolver.query(
 		Alarm.Columns.CONTENT_URI,
 		Alarm.Columns.ALARM_QUERY_COLUMNS,
-		null, null, null).map(new Alarm(_))
+		null, null, null)){ c=> c.map(new Alarm(_)).toArray}
 
   def calculateNextMillis(alarm:Alarm):Long = calculateAlarm(alarm.ttl.shour, alarm.ttl.sminute).getTimeInMillis
 
