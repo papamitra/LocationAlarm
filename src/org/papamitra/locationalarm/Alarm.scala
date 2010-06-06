@@ -47,9 +47,30 @@ object Alarm{
 }
 
 case class TTL(val shour:Int, val sminute:Int, val ehour:Int, val eminute:Int){
-  def isInTimeRange(nowMillis:Long):Boolean =
-    (Alarms.getCalendar(shour, sminute, nowMillis).getTimeInMillis  <= nowMillis) &&
-    (Alarms.getCalendar(ehour, eminute, nowMillis).getTimeInMillis  >= nowMillis)
+  import java.util.Calendar
+  import android.util.Log
+  import Define._
+
+  
+  def isInTimeRange(nowMillis:Long):Boolean = {
+    Log.i(TAG, format("isInTimeRange:%d", nowMillis))
+    Log.i(TAG, format("%d:%02d", shour, sminute))
+    Log.i(TAG, format("%d:%02d", ehour, eminute))
+    
+    val smin = shour * 60 + sminute
+    val emin = ehour * 60 + eminute
+
+    val c = Calendar.getInstance
+    c.setTimeInMillis(nowMillis)
+    val nowmin = c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE)
+
+    return if(emin < smin){
+      // 日を跨いでる.
+      (emin < nowmin) || ( nowmin < smin)
+    }else{
+      (smin < nowmin) && ( nowmin < emin)
+    }
+  }
 }
 
 class Alarm(c:Cursor){
