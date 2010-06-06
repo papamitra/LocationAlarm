@@ -40,7 +40,7 @@ class AlarmService extends Service with LocationListener{
   override def onStartCommand(intent:Intent, flags:Int, startId:Int):Int = {
     Log.i(TAG, "AlarmService.onStartCommand id = " + startId)
 
-    mAlarms = Alarms.getAllAlarm(getContentResolver).toArray
+    mAlarms = Alarms.getAllAlarm(getContentResolver)
 
     Alarms.disableAlert(this)
 

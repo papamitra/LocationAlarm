@@ -3,9 +3,12 @@ package org.papamitra.locationalarm
 
 import android.content.{Context, ContentValues, ContentUris, ContentResolver, Intent}
 import android.app.{PendingIntent, AlarmManager}
+import android.util.Log
+
 import java.util.Calendar
 
 object Alarms{
+  import Define._
   import org.scalaandroid.AndroidHelper._
 
   val ALERT_START = "location_alarm_alert_start"
@@ -59,6 +62,7 @@ object Alarms{
     getAlarm(context.getContentResolver, id) match {
       case Some(alarm) => enabledAlarm(context, alarm, enabled)
       case _ =>
+	Log.w(TAG,"Faild to get Alarm")
     }
 
   def enabledAlarm(context:Context, alarm:Alarm, enabled:Boolean):Unit =
@@ -113,18 +117,13 @@ object Alarms{
   def getCalendar(hour:Int, minute:Int, nowMillis:Long):Calendar = {
     val c = Calendar.getInstance
     c.setTimeInMillis(nowMillis)
+    
+    c.set(Calendar.HOUR_OF_DAY, hour);
+    c.set(Calendar.MINUTE, minute);
+    c.set(Calendar.SECOND, 0);
+    c.set(Calendar.MILLISECOND, 0);
+
     return c
-  }
-
-  def isInTimeNow(sHour:Int, sMinute:Int, eHour:Int, eMinute:Int):Boolean = {
-    val nowMillis = System.currentTimeMillis
-
-    val startCal = getCalendar(sHour, sMinute, nowMillis)
-    val endCal = getCalendar(eHour, eMinute, nowMillis)
-
-    if(eHour < sHour || ((eHour == sHour) && eMinute < sMinute)) endCal.add(Calendar.DAY_OF_YEAR,1)
-
-    return startCal.getTimeInMillis <= nowMillis && nowMillis <= endCal.getTimeInMillis
   }
 
   def enableAlert(context:Context, atTimeInMillis:Long){
