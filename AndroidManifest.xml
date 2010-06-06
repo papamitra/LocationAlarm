@@ -14,22 +14,29 @@
 	<uses-library android:name="com.google.android.maps"></uses-library>
 <activity android:name="SetAlarm" android:label="@string/set_alarm"></activity>    
 <activity android:name="LocationPicker" android:label="@string/location_picker"></activity>
-<service android:name="AlarmService"></service>
 
-        <receiver android:name="AlarmInitReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.TIME_SET" />
-                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-            </intent-filter>
-        </receiver>
+<service android:name="AlarmService"/>
 
-        <receiver android:name="AlarmReceiver">
-            <intent-filter>
-                <action android:name="org.papamitra.locationalarm.ALARM_ACTIVE" />
-            </intent-filter>
-        </receiver>
-	
+<receiver android:name="AlarmInitReceiver">
+  <intent-filter>
+    <action android:name="android.intent.action.BOOT_COMPLETED" />
+    <action android:name="android.intent.action.TIME_SET" />
+    <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+  </intent-filter>
+</receiver>
+
+<receiver android:name="AlarmReceiver">
+  <intent-filter>
+    <action android:name="org.papamitra.locationalarm.ALARM_ACTIVE" />
+  </intent-filter>
+</receiver>
+
+<service android:name="AlarmKlaxon">
+  <intent-filter>
+    <action android:name="org.papamitra.locationalarm.ALARM_ALERT" />
+  </intent-filter>
+</service>
+
 <provider android:name="LocationAlarmProvider" android:authorities="org.papamitra.locationalarm"></provider>
 <activity android:name="AlarmAlert"
 	  android:label="@string/alarm_alert"
@@ -41,4 +48,6 @@
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+<uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
 </manifest> 

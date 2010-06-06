@@ -22,6 +22,8 @@ class AlarmService extends Service with LocationListener{
       alarmAlert.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
 			  | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
       context.startActivity(alarmAlert)
+
+      context.startService(new Intent(context, classOf[AlarmKlaxon]))
     }
   }
 

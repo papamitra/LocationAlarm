@@ -53,10 +53,6 @@ case class TTL(val shour:Int, val sminute:Int, val ehour:Int, val eminute:Int){
 
   
   def isInTimeRange(nowMillis:Long):Boolean = {
-    Log.i(TAG, format("isInTimeRange:%d", nowMillis))
-    Log.i(TAG, format("%d:%02d", shour, sminute))
-    Log.i(TAG, format("%d:%02d", ehour, eminute))
-    
     val smin = shour * 60 + sminute
     val emin = ehour * 60 + eminute
 

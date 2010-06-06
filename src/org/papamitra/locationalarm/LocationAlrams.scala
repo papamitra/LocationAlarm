@@ -32,7 +32,7 @@ class LocationAlarms extends Activity{
     override def bindView(view:View, context:Context, cursor:Cursor){
       val alarm = new Alarm(cursor)
       view.$[CheckBox](R.id.list_enabled) match {
-	case null => // TODO
+	case null =>
 	case cb =>
 	  cb.setChecked(alarm.enabled)
 	  cb.setOnClickListener(new OnClickListener(){

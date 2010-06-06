@@ -11,12 +11,16 @@ object Alarms{
   import Define._
   import org.scalaandroid.AndroidHelper._
 
-  val ALERT_START = "location_alarm_alert_start"
+  val ALERT_START = "alert_start"
 
   val ALARM_ACTIVE = "org.papamitra.locationalarm.ALARM_ACTIVE"
 
+  val ALARM_ALERT_ACTION = "org.papamitra.locationalarm.ALARM_ALERT"
+
   val ALARM_INTENT_LATITUDE = "org.papamitra.locationalarm.intent.extra.latitude"
   val ALARM_INTENT_LONGITUDE = "org.papamitra.locationalarm.intent.extra.longitude"
+
+  val ALARM_KILLED = "alarm_killed"
 
   def updateAlarm(context:Context, alarm:Alarm, nextMillis:Long=0) =
     setAlarm(context,
