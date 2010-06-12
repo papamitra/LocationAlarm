@@ -34,6 +34,8 @@ class AlarmKlaxon extends Service{
 
   private var mMediaPlayer:MediaPlayer = _
 
+  private var mPlaying = false
+
   private lazy val mPhoneStateListener = new PhoneStateListener() {
     override def onCallStateChanged(state:Int, ignored:String) {
       // The user might already be in a call when the alarm fires. When
@@ -63,6 +65,7 @@ class AlarmKlaxon extends Service{
   }
 
   override def onCreate(){
+    mPlaying = false
     mMediaPlayer = new MediaPlayer()
 
     mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
@@ -109,21 +112,26 @@ class AlarmKlaxon extends Service{
 
     val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
     vibrator.vibrate(sVibratePattern,0)
+
+    mPlaying = true
   }
 
   def stop() {
     Log.v(TAG, "AlarmAlert stop");
 
     // Stop audio playing
-    if (mMediaPlayer != null) {
+    if(mPlaying){
+      mPlaying = false
+      if (mMediaPlayer != null) {
         mMediaPlayer.stop();
         mMediaPlayer.release();
         mMediaPlayer = null;
-    }
+      }
 
-    // Stop vibrator
-    val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
-    vibrator.cancel();
+      // Stop vibrator
+      val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
+      vibrator.cancel();
+    }
   
     disableKiller();
   }
