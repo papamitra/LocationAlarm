@@ -24,7 +24,7 @@ object AlarmKlaxon{
 
   private val sVibratePattern = Array[Long](500, 500)
 
-  private val ALARM_TIMEOUT_SECONDS = 5 * 60 // 5min
+  private val ALARM_TIMEOUT_SECONDS = 1 * 60 // 1min
   private val KILLER = 1000
 }
 
@@ -68,8 +68,6 @@ class AlarmKlaxon extends Service{
     mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
     mInitialCallState = mTelephonyManager.getCallState()
 
-//    mAlarm = getIntent().getParcelableExtra(Alarms.ALARM_INTENT_EXTRA)
-
   }
 
   override def onDestroy(){
@@ -85,6 +83,7 @@ class AlarmKlaxon extends Service{
 
   def play(){
     Log.i(TAG, "play alert")
+    stop
 
     val alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
     mMediaPlayer.setOnErrorListener(new OnErrorListener() {
@@ -98,38 +97,14 @@ class AlarmKlaxon extends Service{
     })
 
     try {
-      // Check if we are in a call. If we are, use the in-call alarm
-      // resource at a low volume to not disrupt the call.
-/*
-      if (mTelephonyManager.getCallState()
-          != TelephonyManager.CALL_STATE_IDLE) {
-//        Log.v("Using the in-call alarm");
-        mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
-        setDataSourceFromResource(getResources(), mMediaPlayer,
-				  R.raw.in_call_alarm);
-      } else {
-        mMediaPlayer.setDataSource(this, alert);
-      }
-*/
-      mMediaPlayer.setDataSource(this, alert)
+      // Must reset the media player to clear the error state.
+      mMediaPlayer.reset();
+      setDataSourceFromResource(getResources(), mMediaPlayer, R.raw.fallbackring)
       startAlarm(mMediaPlayer)
     } catch {
-      case ex:Exception =>
-	Log.i(TAG,"alarm error")
-//	Log.v("Using the fallback ringtone");
-	// The alert may be on the sd card which could be busy right
-	// now. Use the fallback ringtone.
-
-	try {
-          // Must reset the media player to clear the error state.
-          mMediaPlayer.reset();
-          setDataSourceFromResource(getResources(), mMediaPlayer, R.raw.fallbackring)
-          startAlarm(mMediaPlayer)
-	} catch {
-	  case ex2:Exception =>
-            // At this point we just don't play anything.
-            Log.e("Failed to play fallback ringtone", ex2.toString)
-	}
+      case ex2:Exception =>
+        // At this point we just don't play anything.
+        Log.e("Failed to play fallback ringtone", ex2.toString)
     }
 
     val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
@@ -150,7 +125,7 @@ class AlarmKlaxon extends Service{
     val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
     vibrator.cancel();
   
-    //disableKiller();
+    disableKiller();
   }
 
   private def setDataSourceFromResource(resources:Resources, player:MediaPlayer, res:Int) {
