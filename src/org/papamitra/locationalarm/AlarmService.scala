@@ -85,7 +85,8 @@ class AlarmService extends Service with LocationListener{
       Location.distanceBetween(location.getLatitude, location.getLongitude,
 			       alarm.latitude, alarm.longitude, result)
       Log.i(TAG,"Distance:" + result(0))
-      if(result(0) < 500){
+
+      if(result(0) < 1500){ // TODO
 	Log.i(TAG, "!!!!! Location Alert !!!!!")
 	// アラート発動
 	sendBroadcast(new Intent(Alarms.ALERT_START))
