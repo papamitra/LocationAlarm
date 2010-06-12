@@ -1,16 +1,16 @@
 package org.papamitra.locationalarm
 
 import android.app.Activity
-import android.content.Intent
+import android.content.{Intent,Context}
 import android.graphics.{Bitmap, BitmapFactory, Canvas, Point}
 import android.os.Bundle
-import android.view.{Gravity, ViewGroup}
+import android.view.{View, Gravity, ViewGroup}
 import android.widget.{ZoomControls, LinearLayout}
 
 import com.google.android.maps.{GeoPoint, MapActivity, MapController, MapView, Overlay, Projection}
 
 import android.graphics.drawable.Drawable
-import android.location.{Location, Geocoder}
+import android.location.{Location, Geocoder,LocationManager}
 import android.widget.{Toast,Button}
 
 import android.util.Log
@@ -31,44 +31,63 @@ object LocationPicker{
 }
 
 class LocationPicker extends MapActivity{
-  import org.scalaandroid.AndroidHelper._
   import org.maidroid.scalamap._
   import android.app.Activity._
   import LocationPicker._
+  import org.scalaandroid.AndroidHelper._
 
   val TAG = "LocationPicker"
   val INITIAL_ZOOM_LEVEL = 15
   val INITIAL_LATITUDE = 35455281
   val INITIAL_LONGITUDE = 139629711
 
-  private lazy val smapView = new SMapView(findViewById(R.id.mapview))
-  private lazy val smapCtrl = smapView.getSMapController
-  private lazy val smapOverlays = smapView.getOverlays
   private lazy val drawable    = getResources.
 				getDrawable (R.drawable.androidmarker)
   private lazy val pickerOverlay = new PickerOverlay (drawable)
   private lazy val geocoder = new Geocoder(this, Locale.JAPAN)
 
-  private var mPoint:GeoPoint = _
+  private var mPoint:GeoPoint = new GeoPoint((INITIAL_LATITUDE * 1e6).toInt, (INITIAL_LONGITUDE * 1e6).toInt)
   private var mAddressName = ""
+
+  def getPoint(intent:Intent) = 
+    if(intent.getBooleanExtra(Alarms.ALARM_INTENT_INITIALIZED, true)){
+      try{
+	val locationManager = getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
+	val loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+	new GeoPoint((loc.getLatitude * 1e6).toInt, (loc.getLongitude * 1e6).toInt)
+      }catch{
+	case e =>
+	  Log.w(TAG, "Failed to get Last Location:" + e.toString)
+	  mPoint
+      }
+    }else{
+      new GeoPoint( (intent.getDoubleExtra(Alarms.ALARM_INTENT_LATITUDE, INITIAL_LATITUDE) * 1e6).toInt,
+		   (intent.getDoubleExtra(Alarms.ALARM_INTENT_LONGITUDE, INITIAL_LONGITUDE) * 1e6).toInt )
+  }
 
   override def onCreate(saveInstanceState: Bundle){
     super.onCreate(saveInstanceState)
 
-    val intent = getIntent
-    mPoint = new GeoPoint( (intent.getDoubleExtra(Alarms.ALARM_INTENT_LATITUDE, INITIAL_LATITUDE) * 1e6).toInt,
-			   (intent.getDoubleExtra(Alarms.ALARM_INTENT_LONGITUDE, INITIAL_LONGITUDE) * 1e6).toInt )
-
-    Log.i(TAG, "LocationPicker.onCreate:" + mPoint.toString)
+    mPoint = getPoint(getIntent)
 
     setContentView(R.layout.map)
 
-    smapView.setBuiltInZoomControls (true)
+    val smapView = new SMapView(findViewById(R.id.mapview)) withAction( 
+      _ setBuiltInZoomControls true)
+    val smapCtrl = smapView.getSMapController withActions(
+      _ animateTo mPoint,
+      _ setZoom INITIAL_ZOOM_LEVEL)
 
-    smapCtrl.animateTo(mPoint)
-    smapCtrl.setZoom(INITIAL_ZOOM_LEVEL)
+    val smapOverlays = smapView.getOverlays
+
+    def setOverlay(point: GeoPoint){    
+      val overlayitem1 = new OverlayItem (point, "", "")
+      pickerOverlay.addOverlay (overlayitem1)
+      smapOverlays.add (pickerOverlay)
+    }
 
     setOverlay(mPoint)
+
     smapOverlays.add(new TapOverlay(){
       @Override def onTapImpl(point: GeoPoint){
 	mAddressName = point.toString
@@ -91,7 +110,7 @@ class LocationPicker extends MapActivity{
       }
     })
 
-    this.$[Button](R.id.map_ok).setOnClickListener( () => {
+    this.%[Button](R.id.map_ok).setOnClickListener( () => {
       setResult(RESULT_OK, (new Intent())
 		.putExtra(LATITUDE, mPoint.getLatitudeE6)
 		.putExtra(LONGITUDE, mPoint.getLongitudeE6)
@@ -99,19 +118,15 @@ class LocationPicker extends MapActivity{
       finish
     })
 
-    this.$[Button](R.id.map_cancel).setOnClickListener( () => {
+    this.%[Button](R.id.map_cancel).setOnClickListener(() => {
       setResult(RESULT_CANCELED)
       finish
     })
+
   }
 
   protected override def isRouteDisplayed(): Boolean = false
 
-  private def setOverlay(point: GeoPoint){    
-    val overlayitem1 = new OverlayItem (point, "", "")
-    pickerOverlay.addOverlay (overlayitem1)
-    smapOverlays.add (pickerOverlay)
-  }
 }
 
 class PickerOverlay (drawable: Drawable) extends 

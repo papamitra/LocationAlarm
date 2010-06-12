@@ -17,6 +17,7 @@ object Alarms{
 
   val ALARM_ALERT_ACTION = "org.papamitra.locationalarm.ALARM_ALERT"
 
+  val ALARM_INTENT_INITIALIZED = "org.papamitra.locationalarm.intent.extra.initialized"
   val ALARM_INTENT_LATITUDE = "org.papamitra.locationalarm.intent.extra.latitude"
   val ALARM_INTENT_LONGITUDE = "org.papamitra.locationalarm.intent.extra.longitude"
 
@@ -39,26 +40,22 @@ object Alarms{
 	       ttlenabled:Boolean, ttl:TTL,
 	       nextmillis:Long=0){
     
-    val values = new ContentValues(12)
-    val resolver = context.getContentResolver
-    
-    values.put(Alarm.Columns.LABEL, label)
-    values.put(Alarm.Columns.ADDRESS, address)
-    values.put(Alarm.Columns.ENABLED, enabled)
-    values.put(Alarm.Columns.LONGITUDE, longitude)
-    values.put(Alarm.Columns.LATITUDE, latitude)
-    values.put(Alarm.Columns.VALID, true)
-    
-    values.put(Alarm.Columns.TTL, ttlenabled)
-    values.put(Alarm.Columns.SHOUR, ttl.shour.asInstanceOf[java.lang.Integer])
-    values.put(Alarm.Columns.SMINUTE, ttl.sminute.asInstanceOf[java.lang.Integer])
-    values.put(Alarm.Columns.EHOUR, ttl.ehour.asInstanceOf[java.lang.Integer])
-    values.put(Alarm.Columns.EMINUTE, ttl.eminute.asInstanceOf[java.lang.Integer])
+    val values = new ContentValues(12) withActions(    
+      _ put(Alarm.Columns.LABEL, label),
+      _ put(Alarm.Columns.ADDRESS, address),
+      _ put(Alarm.Columns.ENABLED, enabled),
+      _ put(Alarm.Columns.LONGITUDE, longitude),
+      _ put(Alarm.Columns.LATITUDE, latitude),
+      _ put(Alarm.Columns.INITIALIZED, false),
+      _ put(Alarm.Columns.TTL, ttlenabled),
+      _ put(Alarm.Columns.SHOUR, ttl.shour.asInstanceOf[java.lang.Integer]),
+      _ put(Alarm.Columns.SMINUTE, ttl.sminute.asInstanceOf[java.lang.Integer]),
+      _ put(Alarm.Columns.EHOUR, ttl.ehour.asInstanceOf[java.lang.Integer]),
+      _ put(Alarm.Columns.EMINUTE, ttl.eminute.asInstanceOf[java.lang.Integer]),
+      _ put(Alarm.Columns.NEXTMILLIS, nextmillis.asInstanceOf[java.lang.Long]))
 
-    values.put(Alarm.Columns.NEXTMILLIS, nextmillis.asInstanceOf[java.lang.Long])
-
-    resolver.update(ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI, id),
-                    values, null, null)
+    context.getContentResolver.update(ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI, id),
+				      values, null, null)
 
   }
 

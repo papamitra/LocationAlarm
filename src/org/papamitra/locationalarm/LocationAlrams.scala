@@ -31,7 +31,7 @@ class LocationAlarms extends Activity{
 
     override def bindView(view:View, context:Context, cursor:Cursor){
       val alarm = new Alarm(cursor)
-      view.$[CheckBox](R.id.list_enabled) match {
+      view.%[CheckBox](R.id.list_enabled) match {
 	case null =>
 	case cb =>
 	  cb.setChecked(alarm.enabled)
@@ -44,13 +44,13 @@ class LocationAlarms extends Activity{
 	  })
       }
 
-      view.$[TextView](R.id.list_address) match{
+      view.%[TextView](R.id.list_address) match{
 	  case null =>
 	  case tv => 
 	    tv.setText( if(null!=alarm.address) alarm.address else "")
       }
 
-      view.$[TextView](R.id.list_label) match{
+      view.%[TextView](R.id.list_label) match{
 	case null =>
 	case tv =>
 	  tv.setText( if(null!=alarm.label) alarm.label else "")
@@ -72,9 +72,9 @@ class LocationAlarms extends Activity{
     Log.i(TAG, "LocationAlarms.updateLayout")
     setContentView(R.layout.main)
 
-    var listview = this.$[ListView](R.id.list)
+    var listview = this.%[ListView](R.id.list)
     listview.setAdapter(new AlarmAdapter(this, Alarms.getAlarmsCursor(getContentResolver)))
-    listview.setEmptyView(this.$(R.id.empty))
+    listview.setEmptyView(this.%(R.id.empty))
 
     listview.setOnItemClickListener(
       new OnItemClickListener(){
