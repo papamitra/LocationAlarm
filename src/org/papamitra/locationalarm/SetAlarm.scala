@@ -1,7 +1,7 @@
 package org.papamitra.locationalarm
 
 import android.content.Intent
-import android.os.Bundle
+import android.os.{Bundle, Handler, Message}
 import android.preference.{Preference, PreferenceActivity, EditTextPreference, CheckBoxPreference, PreferenceScreen}
 import android.preference.Preference.OnPreferenceClickListener
 import android.widget.Toast
@@ -11,9 +11,13 @@ import android.view.{View, LayoutInflater}
 import android.view.ViewGroup.LayoutParams
 import android.widget.{FrameLayout,LinearLayout,Button}
 
+import android.location.Geocoder
+
 import org.scalaandroid.AndroidHelper.ActivityResultTrait
 import android.app.TimePickerDialog
 import android.widget.TimePicker
+
+import java.util.Locale
 
 class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 
@@ -38,13 +42,36 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   private lazy val mLocation = findPreference("location")
   private lazy val mTTL = findPreference("ttl").asInstanceOf[CheckBoxPreference]
 
+  private lazy val geocoder = new Geocoder(this, Locale.JAPAN)
+
   reactions += {
     case (REQUEST_LOCATION,RESULT_OK,data) =>
       setLocationPref(
 	latitude = data.getIntExtra(LATITUDE, 0) / 1e6,
 	longitude = data.getIntExtra(LONGITUDE, 0) / 1e6,
-	address = data.getStringExtra(ADDRESS))
+	address = "")
+      new Thread(() => {
+	mHandler.sendMessage(mHandler.obtainMessage(0, getAddress(mLatitude, mLongitude)))
+      }:Unit).start()
   }
+
+  private val mHandler = new Handler(){
+    override def handleMessage(msg:Message){
+      setAddress(msg.obj.asInstanceOf[String])	  
+    }
+  }
+
+  private def getAddress(latitude:Double, longitude:Double):String =
+    try{
+      val list = geocoder.getFromLocation(latitude,longitude,1)
+      val address = list.get(0)
+      LocationHelper.convertAddressName(address)
+    }catch{
+      case e =>
+	Log.i(TAG, "getFronLocation Failed:" + e.toString)
+	""
+    }
+
 
   def setLocationPref(alarm:Alarm):Unit =
     setLocationPref(
@@ -59,6 +86,15 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
     mLocation.setSummary(mAddress)
   }
 
+  private def setAddress(str:String){
+    mAddress = str
+    if("" == str){
+      mLocation.setSummary(format("(%f,%f)", mLatitude, mLongitude))
+    }else{
+      mLocation.setSummary(str)
+    }
+  }
+    
   override def onCreate(saveInstanceState: Bundle){
     super.onCreate(saveInstanceState)
 
