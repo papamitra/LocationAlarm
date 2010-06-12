@@ -1,20 +1,32 @@
 package org.scalaandroid
 
+import android.util.Log
+
 object AndroidHelper {
   import android.view.View
+  import android.app.Activity
+  val TAG1 = "AndroidHelper"
 
-  // findViewById(id).asInstanceOf[T] -> this.$[T](id)
-  class DollarAssoc[A <: {def findViewById(id:Int):View}](x: A){
-    def $[B <: View](id:Int): B = x.findViewById(id).asInstanceOf[B]
+  // findViewById(id).asInstanceOf[T] -> this.%[T](id)
+  class PercentAssocActivity[A <: Activity](x: A){
+    def %[B <: View](id:Int): B = x.findViewById(id).asInstanceOf[B]
   }
-  implicit def any2DollarAssoc[T <: {def findViewById(id:Int):View}](x: T): DollarAssoc[T] = new DollarAssoc(x)
+
+  implicit def anyPercentAssocActivity[T <: Activity](x: T)= new PercentAssocActivity(x)
+
+  class PercentAssocView[A <: View](x: A){
+    def %[B <: View](id:Int): B = x.findViewById(id).asInstanceOf[B]
+  }
+
+  implicit def any2PercentAssocView[T <: View](x: T)= new PercentAssocView(x)
+
 
   // OnClickListener helper
   import android.view.View.OnClickListener
   implicit def funcToClicker(f:View => Unit):OnClickListener = 
-    new OnClickListener(){ def onClick(v:View)=f.apply(v)}
+    new OnClickListener(){ override def onClick(v:View):Unit=f.apply(v)}
   implicit def funcToClicker0(f:() => Unit):OnClickListener = 
-    new OnClickListener() { def onClick(v:View)=f.apply}
+    new OnClickListener() { override def onClick(v:View):Unit=f.apply}
 
   import android.preference.Preference
   import android.preference.Preference.OnPreferenceChangeListener
@@ -59,6 +71,18 @@ object AndroidHelper {
     protected val reactions = new HashSet[PartialFunction[(Int,Int,Intent), Unit]]()
     override def onActivityResult(requestCode:Int, retCode:Int, data:Intent){
       for(r <- reactions) if(r isDefinedAt (requestCode,retCode,data)) r(requestCode, retCode, data)
+    }
+  }
+
+  // CascadingActions from http://gist.github.com/434620
+  implicit def tToActioneerT[T](t: T) = Actioneer(t)
+    
+  case class Actioneer[T](tee: T) {
+    def withAction(action: (T => Unit)): T = 
+      withActions(action)
+    def withActions(actions: (T => Unit)*): T = {
+      actions foreach (_ (tee))
+      tee
     }
   }
 
