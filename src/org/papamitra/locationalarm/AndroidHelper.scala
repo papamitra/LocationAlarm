@@ -86,4 +86,6 @@ object AndroidHelper {
     }
   }
 
+  implicit def funcToRunnable(f:() => Unit):Runnable = 
+    new Runnable { override def run():Unit=f.apply}
 }
