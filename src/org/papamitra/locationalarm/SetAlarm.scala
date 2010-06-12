@@ -22,14 +22,15 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   import android.app.Activity._
   import Define._
 
-  var mLatitude:Double = _
-  var mLongitude:Double = _
-  var mAddress:String = _
-
-  var mStartHour:Int = _
-  var mStartMinute:Int = _
-  var mEndHour:Int = _
-  var mEndMinute:Int = _
+  private var mLatitude:Double = _
+  private var mLongitude:Double = _
+  private var mAddress:String = _
+  private var mInitialized:Boolean = _
+  
+  private var mStartHour:Int = _
+  private var mStartMinute:Int = _
+  private var mEndHour:Int = _
+  private var mEndMinute:Int = _
 
   private lazy val mLabel = findPreference("label").asInstanceOf[EditTextPreference]
   private lazy val mStartTime = findPreference("start_time")
@@ -65,8 +66,11 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 
     addPreferencesFromResource(R.xml.preference)
 
+    val id:Int = getIntent().getLongExtra(LocationAlarms.ALARM_ID,-1).asInstanceOf[Int]
+    Log.i(TAG, "ALARM_ID:" + id.toString)
+
     // OK/Cancelボタンの配置
-    layoutOkCancel
+    layoutOkCancel(id)
 
     mLabel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener(){
       def onPreferenceChange(p:Preference, newValue:Any):Boolean={
@@ -75,24 +79,13 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
       }
     })
 
-    // PreferenceのLocationをクリックした時にMapを起動
-    mLocation.setOnPreferenceClickListener(
-      new OnPreferenceClickListener(){
-	override def onPreferenceClick(pref: Preference):Boolean={
-	  val mapIntent = new Intent(SetAlarm.this, classOf[LocationPicker])
-	  mapIntent.putExtra(Alarms.ALARM_INTENT_LATITUDE, mLatitude)
-	  mapIntent.putExtra(Alarms.ALARM_INTENT_LONGITUDE, mLongitude)
-	  startActivityForResult(mapIntent, REQUEST_LOCATION)
-	  return true // todo
-	}
-      })
-    
-    // TODO: AlarmID
-    Alarms.getAlarm(getContentResolver, 1) match {
+    Alarms.getAlarm(getContentResolver, id) match {
       case Some(alarm) => 
 	setLocationPref(alarm)
-	mLabel.setText(alarm.label)
-	mLabel.setSummary(alarm.label)
+      
+	mLabel withActions(
+	  _ setText alarm.label,
+	  _ setSummary alarm.label)
 
 	mTTL.setChecked(alarm.ttlenabled)
 	mStartHour = alarm.ttl.shour
@@ -103,11 +96,25 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 	mEndMinute = alarm.ttl.eminute
 	mEndTime.setSummary(format("%d:%02d", mEndHour, mEndMinute))
 
+	mInitialized = alarm.initialized
       case _ => 
-	Log.e(TAG, "Failed to get Alarm id:1")
+	Log.e(TAG, "Failed to get Alarm id:" + id.toString)
 	finish
     }
 
+    // PreferenceのLocationをクリックした時にMapを起動
+    mLocation.setOnPreferenceClickListener(
+      new OnPreferenceClickListener(){
+	override def onPreferenceClick(pref: Preference):Boolean={
+	  val mapIntent = new Intent(SetAlarm.this, classOf[LocationPicker]) withActions(
+	    _ putExtra(Alarms.ALARM_INTENT_INITIALIZED, mInitialized),
+	    _ putExtra(Alarms.ALARM_INTENT_LATITUDE, mLatitude),
+	    _ putExtra(Alarms.ALARM_INTENT_LONGITUDE, mLongitude))
+
+	  startActivityForResult(mapIntent, REQUEST_LOCATION)
+	  return true // todo
+	}
+      })
   }
   
   private val DIALOG_START_TIME = 0
@@ -155,13 +162,13 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
       return true
     }
 
-  def layoutOkCancel(){
+  def layoutOkCancel(id:Int){
     // We have to do this to get the save/cancel buttons to highlight on
     // their own.
     getListView().setItemsCanFocus(true)
 
     // Grab the content view so we can modify it.
-    val content = getWindow().getDecorView().$[FrameLayout](android.R.id.content)
+    val content = getWindow().getDecorView().%[FrameLayout](android.R.id.content)
 
     // Get the main ListView and remove it from the content view.
     val lv = getListView()
@@ -183,13 +190,13 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
     // Inflate the buttons onto the LinearLayout.
     val v = LayoutInflater.from(this).inflate(R.layout.save_cancel_alarm, ll)
 
-    v.$[Button](R.id.alarm_save).setOnClickListener((v:View) => {
-      saveAlarm
+    v.%[Button](R.id.alarm_save).setOnClickListener(() => {
+      saveAlarm(id)
       startService(new Intent(SetAlarm.this, classOf[AlarmService]))
       finish
     })
 
-    v.$[Button](R.id.alarm_cancel).setOnClickListener((v:View) => {
+    v.%[Button](R.id.alarm_cancel).setOnClickListener(() => {
       finish
     })
 
@@ -198,9 +205,9 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 
   }
 
-  def saveAlarm(){
+  def saveAlarm(id:Int){
     // TODO: AlarmID
-    Alarms.setAlarm(this, 1,
+    Alarms.setAlarm(this, id,
 		    enabled = true,
 		    label = mLabel.getText(),
 		    address = mAddress,
