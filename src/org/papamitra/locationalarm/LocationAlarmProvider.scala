@@ -8,8 +8,20 @@ import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 
+object LocationAlarmProvider{
+  import android.content.UriMatcher
+  private val sURLMatcher = new UriMatcher(UriMatcher.NO_MATCH)
+
+  private val ALARMS:Int = 1
+  private val ALARMS_ID:Int = 2
+
+  sURLMatcher.addURI("org.papamitra.locationalarm", "alarm", ALARMS);
+  sURLMatcher.addURI("org.papamitra.locationalarm", "alarm/#", ALARMS_ID);
+}
+
 class LocationAlarmProvider extends ContentProvider{
   import Define._
+  import LocationAlarmProvider._
 
   private val DATABASE_NAME = "alarms.db"
   private val DATABASE_VERSION = 5  
@@ -26,7 +38,7 @@ class LocationAlarmProvider extends ContentProvider{
 		 "enabled INTERGER, " +
 		 "longitude REAL, " +
 		 "latitude REAL, " +
-		 "valid INTEGER, " +
+		 "initialized INTEGER, " +
 	         "ttl INTEGER, " +
 		 "shour INTEGER, " +
 		 "sminute INTEGER, " +
@@ -35,10 +47,12 @@ class LocationAlarmProvider extends ContentProvider{
 		 "nextmillis INTEGER);" )
 
       val insertMe = "INSERT INTO alarms " +
-      "(label, address, enabled, latitude, longitude, valid, ttl, shour, sminute, ehour, eminute, nextmillis) " +
+      "(label, address, enabled, latitude, longitude, initialized, ttl, shour, sminute, ehour, eminute, nextmillis) " +
       "VALUES "
 
-      db.execSQL(insertMe + "('test1','test2',1, 35.0, 136.0, 1, 0, 0,0,0,0,0);")
+      db.execSQL(insertMe + "('Alarm1','',1, 0.0, 0.0, 1, 0, 0,0,0,0,0);")
+      db.execSQL(insertMe + "('Alarm2','',1, 0.0, 0.0, 1, 0, 0,0,0,0,0);")
+      db.execSQL(insertMe + "('Alarm3','',1, 0.0, 0.0, 1, 0, 0,0,0,0,0);")
     }
 
     override def onUpgrade(db:SQLiteDatabase, oldVersion:Int, currentVersion:Int){
@@ -52,7 +66,15 @@ class LocationAlarmProvider extends ContentProvider{
 
   override def query(url:Uri, projectionIn:Array[String], selection:String, selectionArgs:Array[String], sort:String):Cursor ={
     val qb = new SQLiteQueryBuilder()
-    qb.setTables("alarms")
+
+    sURLMatcher.`match`(url) match{
+      case ALARMS =>
+	qb.setTables("alarms")
+      case ALARMS_ID =>
+	qb.setTables("alarms")
+	qb.appendWhere("_id=")
+	qb.appendWhere(url.getPathSegments().get(1))
+    }
 
     val db = mOpenHelper.getReadableDatabase
 
@@ -73,7 +95,9 @@ class LocationAlarmProvider extends ContentProvider{
   override def update(url:Uri, values:ContentValues, where:String, whereArgs:Array[String]):Int = {
     val db = mOpenHelper.getWritableDatabase
 
-    val count = db.update("alarms", values, "_id= 1", null)
+    val segment = url.getPathSegments().get(1)
+    val rowId = java.lang.Long.parseLong(segment)
+    val count = db.update("alarms", values, "_id= " + rowId, null)
 
     Log.i(TAG, "update")
     getContext.getContentResolver.notifyChange(url,null)

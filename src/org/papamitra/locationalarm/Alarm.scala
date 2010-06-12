@@ -14,7 +14,7 @@ object Alarm{
     val ENABLED = "enabled"
     val LONGITUDE = "longitude"
     val LATITUDE = "latitude"
-    val VALID = "valid"
+    val INITIALIZED = "initialized"
 
     val TTL = "ttl"
     val SHOUR = "shour"
@@ -25,7 +25,7 @@ object Alarm{
 
     val ALARM_QUERY_COLUMNS = Array[String]( BaseColumns._ID, LABEL,
 					    ADDRESS, ENABLED,
-					    LONGITUDE, LATITUDE, VALID,
+					    LONGITUDE, LATITUDE, INITIALIZED,
 					    TTL, SHOUR, SMINUTE, EHOUR, EMINUTE,
 					    NEXTMILLIS)
     val ALARM_ID_INDEX = 0
@@ -34,7 +34,7 @@ object Alarm{
     val ALARM_ENABLED_INDEX = 3
     val ALARM_LONGITUDE_INDEX = 4
     val ALARM_LATITUDE_INDEX = 5
-    val ALARM_VALID_INDEX = 6
+    val ALARM_INITIALIZED_INDEX = 6
 
     val ALARM_TTL_INDEX = 7
     val ALARM_SHOUR_INDEX = 8
@@ -78,7 +78,7 @@ class Alarm(c:Cursor){
   val enabled = c.getInt(Columns.ALARM_ENABLED_INDEX) == 1
   val longitude:Double = c.getDouble(Columns.ALARM_LONGITUDE_INDEX)
   val latitude:Double = c.getDouble(Columns.ALARM_LATITUDE_INDEX)
-  val valid = c.getInt(Columns.ALARM_VALID_INDEX) == 1
+  val initialized = c.getInt(Columns.ALARM_INITIALIZED_INDEX) == 1
 
   val ttlenabled = c.getInt(Columns.ALARM_TTL_INDEX) == 1
   val ttl = TTL(c.getInt(Columns.ALARM_SHOUR_INDEX),
