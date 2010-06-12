@@ -10,14 +10,13 @@ import android.widget.{ZoomControls, LinearLayout}
 import com.google.android.maps.{GeoPoint, MapActivity, MapController, MapView, Overlay, Projection}
 
 import android.graphics.drawable.Drawable
-import android.location.{Location, Geocoder,LocationManager}
+import android.location.{Location,LocationManager}
 import android.widget.{Toast,Button}
 
 import android.util.Log
 import com.google.android.maps.OverlayItem
 
 import java.util.ArrayList
-import java.util.Locale
 
 import org.maidroid.scalamap.SItemizedOverlay
 import SItemizedOverlay.BOUND_CENTER_BOTTOM
@@ -44,10 +43,8 @@ class LocationPicker extends MapActivity{
   private lazy val drawable    = getResources.
 				getDrawable (R.drawable.androidmarker)
   private lazy val pickerOverlay = new PickerOverlay (drawable)
-  private lazy val geocoder = new Geocoder(this, Locale.JAPAN)
 
   private var mPoint:GeoPoint = new GeoPoint((INITIAL_LATITUDE * 1e6).toInt, (INITIAL_LONGITUDE * 1e6).toInt)
-  private var mAddressName = ""
 
   def getPoint(intent:Intent) = 
     if(intent.getBooleanExtra(Alarms.ALARM_INTENT_INITIALIZED, true)){
@@ -90,31 +87,16 @@ class LocationPicker extends MapActivity{
 
     smapOverlays.add(new TapOverlay(){
       @Override def onTapImpl(point: GeoPoint){
-	mAddressName = point.toString
 	mPoint = point
 	setOverlay(mPoint)
 	smapCtrl.animateTo(mPoint)
-	try{
-	  val list = geocoder.getFromLocation(
-            LocationHelper.getGeocoderDouble(point.getLatitudeE6()),
-            LocationHelper.getGeocoderDouble(point.getLongitudeE6()),
-            1)
-          val address = list.get(0)
-          mAddressName = LocationHelper.convertAddressName(address)
-	  Toast.makeText(getApplicationContext(), mAddressName, Toast.LENGTH_LONG).show()
-	}catch{
-	  case e =>
-	    Log.i(TAG, "getFronLocation Failed:" + e.toString)
-	    mAddressName = point.toString
-	}
       }
     })
 
     this.%[Button](R.id.map_ok).setOnClickListener( () => {
       setResult(RESULT_OK, (new Intent())
 		.putExtra(LATITUDE, mPoint.getLatitudeE6)
-		.putExtra(LONGITUDE, mPoint.getLongitudeE6)
-		.putExtra(ADDRESS, mAddressName))
+		.putExtra(LONGITUDE, mPoint.getLongitudeE6))
       finish
     })
 
