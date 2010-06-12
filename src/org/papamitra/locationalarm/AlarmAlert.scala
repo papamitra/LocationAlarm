@@ -14,6 +14,7 @@ import android.content.DialogInterface
 import android.content.DialogInterface.OnClickListener
 
 import android.widget.Button
+import android.view.KeyEvent
 
 class AlarmAlert extends Activity{
   import org.scalaandroid.AndroidHelper._
@@ -36,11 +37,15 @@ class AlarmAlert extends Activity{
       .setMessage("")
       .setPositiveButton("OK", new DialogInterface.OnClickListener(){
 	override def onClick(dialog: DialogInterface, whichButton:Int){
-          stopService(new Intent(Alarms.ALARM_ALERT_ACTION))
-	  AlarmAlert.this.finish	  
+	  dismiss
 	}
       })
       .show()
+  }
+
+  override def onStop(){
+    super.onStop
+    finish
   }
 
   override def onDestroy(){
@@ -48,5 +53,21 @@ class AlarmAlert extends Activity{
     unregisterReceiver(mReceiver)
   }
 
-  
+  override def dispatchKeyEvent(event:KeyEvent):Boolean = {
+    val up = (event.getAction == KeyEvent.ACTION_UP)
+    if(Array(KeyEvent.KEYCODE_VOLUME_UP,
+	     KeyEvent.KEYCODE_VOLUME_DOWN,
+	     KeyEvent.KEYCODE_CAMERA,
+	     KeyEvent.KEYCODE_FOCUS).exists(_ == event.getKeyCode)){
+      if(up)dismiss
+    }
+
+    super.dispatchKeyEvent(event)
+  }
+
+  def dismiss(){
+    stopService(new Intent(Alarms.ALARM_ALERT_ACTION))
+    finish
+  }
+    
 }
