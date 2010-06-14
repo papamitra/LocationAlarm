@@ -14,7 +14,7 @@ import android.content.DialogInterface
 import android.content.DialogInterface.OnClickListener
 
 import android.widget.Button
-import android.view.KeyEvent
+import android.view.{WindowManager,KeyEvent}
 
 class AlarmAlert extends Activity{
   import org.scalaandroid.AndroidHelper._
@@ -30,8 +30,18 @@ class AlarmAlert extends Activity{
   override protected def onCreate(icicle:Bundle) {
     super.onCreate(icicle);
 
-    registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED))
+    requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+			 | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+			 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+			 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
 
+    setContentView(R.layout.alarm_alert)
+
+    this.%[Button](R.id.dismiss).setOnClickListener(() => dismiss)
+
+    registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED))
+/*
     new AlertDialog.Builder(this)
       .setTitle("Location Alert")
       .setMessage("")
@@ -41,10 +51,12 @@ class AlarmAlert extends Activity{
 	}
       })
       .show()
+*/
   }
 
   override def onStop(){
     super.onStop
+    dismiss // TODO
     finish
   }
 
