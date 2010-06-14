@@ -87,7 +87,7 @@ class AlarmKlaxon extends Service{
   def play(){
     Log.i(TAG, "play alert")
     stop
-
+/*
 //    val alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
     mMediaPlayer.setOnErrorListener(new OnErrorListener() {
       override def onError(mp:MediaPlayer, what:Int,extra:Int):Boolean = {
@@ -109,7 +109,7 @@ class AlarmKlaxon extends Service{
         // At this point we just don't play anything.
         Log.e("Failed to play fallback ringtone", ex2.toString)
     }
-
+*/
     val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
     vibrator.vibrate(sVibratePattern,0)
 
@@ -122,12 +122,13 @@ class AlarmKlaxon extends Service{
     // Stop audio playing
     if(mPlaying){
       mPlaying = false
+/*
       if (mMediaPlayer != null) {
         mMediaPlayer.stop();
         mMediaPlayer.release();
         mMediaPlayer = null;
       }
-
+*/
       // Stop vibrator
       val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
       vibrator.cancel();
