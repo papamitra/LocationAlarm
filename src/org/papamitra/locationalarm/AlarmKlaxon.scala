@@ -71,10 +71,13 @@ class AlarmKlaxon extends Service{
     mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
     mInitialCallState = mTelephonyManager.getCallState()
 
+    AlarmAlertWakeLock.acquireCpuWakeLock(this)
   }
 
   override def onDestroy(){
     stop
+    mTelephonyManager.listen(mPhoneStateListener, 0)
+    AlarmAlertWakeLock.releaseCpuLock()
   }
 
   override def onBind(intent:Intent):IBinder = null
