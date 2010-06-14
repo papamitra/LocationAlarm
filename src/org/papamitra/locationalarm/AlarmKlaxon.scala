@@ -88,7 +88,7 @@ class AlarmKlaxon extends Service{
     Log.i(TAG, "play alert")
     stop
 
-    val alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+//    val alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
     mMediaPlayer.setOnErrorListener(new OnErrorListener() {
       override def onError(mp:MediaPlayer, what:Int,extra:Int):Boolean = {
         Log.e(TAG, "Error occurred while playing audio.")
