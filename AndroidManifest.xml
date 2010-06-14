@@ -41,6 +41,10 @@
 <activity android:name="AlarmAlert"
 	  android:label="@string/alarm_alert"
 	  android:theme="@style/alarm_alert"
+          android:excludeFromRecents="true"
+          android:launchMode="singleInstance"
+          android:taskAffinity=""
+          android:configChanges="orientation|keyboardHidden|keyboard|navigation"
 	  />
 </application>
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
