@@ -33,6 +33,7 @@ class AlarmService extends Service with LocationListener{
     super.onCreate()
     val locationManager = getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this)
+    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this)
 
     registerReceiver(alertReceiver, new IntentFilter(Alarms.ALERT_START))
 
