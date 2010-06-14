@@ -116,6 +116,7 @@ class AlarmKlaxon extends Service{
     val vibrator = getSystemService(Context.VIBRATOR_SERVICE).asInstanceOf[Vibrator]
     vibrator.vibrate(sVibratePattern,0)
 
+    enableKiller
     mPlaying = true
   }
 
