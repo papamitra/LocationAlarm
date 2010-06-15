@@ -42,7 +42,7 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   private lazy val mLocation = findPreference("location")
   private lazy val mTTL = findPreference("ttl").asInstanceOf[CheckBoxPreference]
 
-  private lazy val geocoder = new Geocoder(this, Locale.JAPAN)
+  private lazy val geocoder = new Geocoder(this, Locale.getDefault())
 
   reactions += {
     case (REQUEST_LOCATION,RESULT_OK,data) =>
@@ -68,7 +68,7 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
       LocationHelper.convertAddressName(address)
     }catch{
       case e =>
-	Log.i(TAG, "getFronLocation Failed:" + e.toString)
+	Log.i(TAG, "getFromLocation Failed:" + e.toString)
 	""
     }
 
