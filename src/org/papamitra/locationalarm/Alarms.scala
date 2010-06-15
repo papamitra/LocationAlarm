@@ -5,6 +5,7 @@ import android.content.{Context, ContentValues, ContentUris, ContentResolver, In
 import android.app.{PendingIntent, AlarmManager}
 import android.util.Log
 
+import java.text.SimpleDateFormat
 import java.util.Calendar
 
 object Alarms{
@@ -97,45 +98,41 @@ object Alarms{
   def calculateNextMillis(alarm:Alarm):Long = calculateAlarm(alarm.ttl.shour, alarm.ttl.sminute).getTimeInMillis
 
   def calculateAlarm(hour:Int, minute:Int):Calendar = {
-    val c = Calendar.getInstance
-    c.setTimeInMillis(System.currentTimeMillis)
+    val c = Calendar.getInstance withAction(
+      _ setTimeInMillis(System.currentTimeMillis))
     
     val nowHour = c.get(Calendar.HOUR_OF_DAY)
     val nowMinute = c.get(Calendar.MINUTE)
     
-    if(hour < nowHour || (hour == nowHour && minute < nowMinute)){
+    if((hour < nowHour) || (hour == nowHour && minute < nowMinute)){
       c.add(Calendar.DAY_OF_YEAR, 1)
     }
     
-    c.set(Calendar.HOUR_OF_DAY, hour)
-    c.set(Calendar.MINUTE, minute)
-    c.set(Calendar.SECOND, 0)
-    c.set(Calendar.MILLISECOND, 0)
-
-    return c
+    c withActions(
+      _ set(Calendar.HOUR_OF_DAY, hour),
+      _ set(Calendar.MINUTE, minute),
+      _ set(Calendar.SECOND, 0),
+      _ set(Calendar.MILLISECOND, 0))
   }
 
-  def getCalendar(hour:Int, minute:Int, nowMillis:Long):Calendar = {
-    val c = Calendar.getInstance
-    c.setTimeInMillis(nowMillis)
-    
-    c.set(Calendar.HOUR_OF_DAY, hour);
-    c.set(Calendar.MINUTE, minute);
-    c.set(Calendar.SECOND, 0);
-    c.set(Calendar.MILLISECOND, 0);
+  def getCalendar(hour:Int, minute:Int, nowMillis:Long):Calendar = 
+    Calendar.getInstance withActions(
+      _ setTimeInMillis(nowMillis),
+      _ set(Calendar.HOUR_OF_DAY, hour),
+      _ set(Calendar.MINUTE, minute),
+      _ set(Calendar.SECOND, 0),
+      _ set(Calendar.MILLISECOND, 0))
 
-    return c
-  }
 
   def enableAlert(context:Context, atTimeInMillis:Long){
+    Log.i(TAG, "set alert:" + formatDate(Calendar.getInstance.withAction(_ setTimeInMillis(atTimeInMillis))))
+
     val am = context.getSystemService(Context.ALARM_SERVICE).asInstanceOf[AlarmManager]
     val intent = new Intent(ALARM_ACTIVE)
     val sender:PendingIntent = PendingIntent.getBroadcast(
                 context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
 
     am.set(AlarmManager.RTC_WAKEUP, atTimeInMillis, sender)
-
-    //TODO setStatusBarIcon(context, true);
   }
 
   def disableAlert(context:Context){
@@ -147,5 +144,8 @@ object Alarms{
     am.cancel(sender);
     // TODO:setStatusBarIcon(context, false);
   }
+
+  private def formatDate(cal:Calendar) = 
+    (new SimpleDateFormat("yyyy/MM/dd/ HH:mm")).format(cal.getTime())
 
 }
