@@ -53,10 +53,13 @@ class AlarmService extends Service with LocationListener{
       return Service.START_NOT_STICKY
     }
 
-    if(mAlarms.filter(_.isActiveAt(System.currentTimeMillis)).isEmpty){
+    val currentMillis = System.currentTimeMillis
+    if(mAlarms.filter(_.isActiveAt(currentMillis)).isEmpty){
       Log.i(TAG, "No Alarm Enabled")
-      val minNextMillis = mAlarms.map(Alarms.calculateNextMillis(_)).reduceLeft(Math.min(_,_))
-      if (minNextMillis - System.currentTimeMillis < MIN_TIME * 2){
+      val minNextMillis = mAlarms.filter(_.enabled)
+				  .map(Alarms.calculateNextMillis(_))
+				  .reduceLeft(Math.min(_,_))
+      if (minNextMillis - currentMillis < MIN_TIME){
 	return Service.START_STICKY
       }else{
 	Alarms.enableAlert(this,minNextMillis)
@@ -79,7 +82,7 @@ class AlarmService extends Service with LocationListener{
     super.onDestroy()
   }
 
-  def checkAlert(location:Location){
+  private def checkAlert(location:Location){
     for(alarm <- Alarms.getAllAlarm(getContentResolver)
 			.filter(_.isActiveAt(System.currentTimeMillis))){
       val result = Array[Float](1)
@@ -98,7 +101,7 @@ class AlarmService extends Service with LocationListener{
     }
   }
     
-  def disabledAlarm(alarm:Alarm) {
+  private def disabledAlarm(alarm:Alarm) {
     alarm.ttlenabled match {
       case true =>
 	Alarms.updateAlarm(this, alarm, Alarms.calculateNextMillis(alarm))
