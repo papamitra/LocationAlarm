@@ -32,27 +32,23 @@ object Alarms{
 	     address = alarm.address,
 	     latitude = alarm.latitude,
 	     longitude = alarm.longitude,
-	     ttlenabled = alarm.ttlenabled,
 	     ttl=alarm.ttl,
 	     nextmillis=nextMillis)
 
   def setAlarm(context:Context, id:Int, enabled:Boolean, label:String, address:String,
 	       latitude:Double, longitude:Double,
-	       ttlenabled:Boolean, ttl:TTL,
-	       nextmillis:Long=0){
+	       ttl:TTL, nextmillis:Long=0){
     
-    val values = new ContentValues(12) withActions(    
+    val values = new ContentValues(10) withActions(
       _ put(Alarm.Columns.LABEL, label),
       _ put(Alarm.Columns.ADDRESS, address),
       _ put(Alarm.Columns.ENABLED, enabled),
       _ put(Alarm.Columns.LONGITUDE, longitude),
       _ put(Alarm.Columns.LATITUDE, latitude),
       _ put(Alarm.Columns.INITIALIZED, false),
-      _ put(Alarm.Columns.TTL, ttlenabled),
       _ put(Alarm.Columns.SHOUR, ttl.shour.asInstanceOf[java.lang.Integer]),
       _ put(Alarm.Columns.SMINUTE, ttl.sminute.asInstanceOf[java.lang.Integer]),
-      _ put(Alarm.Columns.EHOUR, ttl.ehour.asInstanceOf[java.lang.Integer]),
-      _ put(Alarm.Columns.EMINUTE, ttl.eminute.asInstanceOf[java.lang.Integer]),
+      _ put(Alarm.Columns.MIN, ttl.min.asInstanceOf[java.lang.Integer]),
       _ put(Alarm.Columns.NEXTMILLIS, nextmillis.asInstanceOf[java.lang.Long]))
 
     context.getContentResolver.update(ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI, id),
@@ -70,7 +66,7 @@ object Alarms{
   def enabledAlarm(context:Context, alarm:Alarm, enabled:Boolean):Unit =
     setAlarm(context, alarm.id, enabled, alarm.label, alarm.address,
 	     alarm.latitude, alarm.longitude,
-	     alarm.ttlenabled, alarm.ttl, 0)
+	     alarm.ttl, 0)
 
 
   def getAlarm(resolver:ContentResolver, id:Int):Option[Alarm] = 

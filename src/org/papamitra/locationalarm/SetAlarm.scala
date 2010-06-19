@@ -2,7 +2,7 @@ package org.papamitra.locationalarm
 
 import android.content.Intent
 import android.os.{Bundle, Handler, Message}
-import android.preference.{Preference, PreferenceActivity, EditTextPreference, CheckBoxPreference, PreferenceScreen}
+import android.preference.{Preference, PreferenceActivity, EditTextPreference, ListPreference, CheckBoxPreference, PreferenceScreen}
 import android.preference.Preference.OnPreferenceClickListener
 import android.widget.Toast
 import android.util.Log
@@ -33,14 +33,11 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   
   private var mStartHour:Int = _
   private var mStartMinute:Int = _
-  private var mEndHour:Int = _
-  private var mEndMinute:Int = _
 
   private lazy val mLabel = findPreference("label").asInstanceOf[EditTextPreference]
   private lazy val mStartTime = findPreference("start_time")
-  private lazy val mEndTime = findPreference("end_time")
   private lazy val mLocation = findPreference("location")
-  private lazy val mTTL = findPreference("ttl").asInstanceOf[CheckBoxPreference]
+  private lazy val mMinList = findPreference("min_list").asInstanceOf[ListPreference]
 
   private lazy val geocoder = new Geocoder(this, Locale.getDefault())
 
@@ -123,14 +120,11 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 	  _ setText alarm.label,
 	  _ setSummary alarm.label)
 
-	mTTL.setChecked(alarm.ttlenabled)
 	mStartHour = alarm.ttl.shour
 	mStartMinute = alarm.ttl.sminute
 	mStartTime.setSummary(format("%d:%02d", mStartHour, mStartMinute))
 
-	mEndHour = alarm.ttl.ehour
-	mEndMinute = alarm.ttl.eminute
-	mEndTime.setSummary(format("%d:%02d", mEndHour, mEndMinute))
+	mMinList setValue alarm.ttl.min.toString
 
 	mInitialized = alarm.initialized
       case _ => 
@@ -154,7 +148,6 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
   }
   
   private val DIALOG_START_TIME = 0
-  private val DIALOG_END_TIME = 1
 
   class TimeSetListener(val id:Int) extends TimePickerDialog.OnTimeSetListener{
     override def onTimeSet(view:TimePicker,hourOfDay:Int,minute:Int) {
@@ -167,10 +160,6 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
       new TimePickerDialog(SetAlarm.this,
 			   new TimeSetListener(id),
 			   mStartHour, mStartMinute,true)
-    case DIALOG_END_TIME =>
-      new TimePickerDialog(SetAlarm.this,
-			   new TimeSetListener(id),
-			   mEndHour, mEndMinute,true)
   }
 
   def setTime(id:Int, hourOfDay:Int, minute:Int){
@@ -179,19 +168,13 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 	mStartHour = hourOfDay
 	mStartMinute = minute
 	mStartTime.setSummary(format("%d:%02d", hourOfDay,minute))
-      case DIALOG_END_TIME =>
-	mEndHour = hourOfDay
-	mEndMinute = minute
-	mEndTime.setSummary(format("%d:%02d", hourOfDay,minute))
+      case _ =>
     }
   }
 
   override def onPreferenceTreeClick(preferenceScreen:PreferenceScreen, preference:Preference):Boolean = preference match {
     case pref if pref == mStartTime =>
       showDialog(DIALOG_START_TIME)
-      return true
-    case pref if pref == mEndTime =>
-      showDialog(DIALOG_END_TIME)
       return true
     case _ =>
       Log.i(TAG, "unknown pref")
@@ -249,8 +232,7 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 		    address = mAddress,
 		    latitude = mLatitude,
 		    longitude = mLongitude,
-		    ttlenabled = mTTL.isChecked,
-		    ttl = TTL(mStartHour,mStartMinute,mEndHour,mEndMinute),
+		    ttl = TTL(mStartHour,mStartMinute,mMinList.getValue().toInt),
 		    nextmillis=0)
   }
 

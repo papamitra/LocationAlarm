@@ -13,8 +13,8 @@ class AlarmService extends Service with LocationListener{
 
   var mAlarms:Array[Alarm] = _
 
-  val MIN_TIME:Int = 60 * 1000 // 1分
-  val MIN_DISTANCE:Int = 0
+  val MIN_TIME:Int = 0
+  val MIN_DISTANCE:Int = 1
 
   private lazy val alertReceiver = new BroadcastReceiver(){
     override def onReceive(context:Context, intent:Intent){
@@ -102,12 +102,8 @@ class AlarmService extends Service with LocationListener{
   }
     
   private def disabledAlarm(alarm:Alarm) {
-    alarm.ttlenabled match {
-      case true =>
-	Alarms.updateAlarm(this, alarm, Alarms.calculateNextMillis(alarm))
-      case false =>
-	Alarms.enabledAlarm(this, alarm, false)
-    }
+    if(alarm.enabled)
+      Alarms.updateAlarm(this, alarm, Alarms.calculateNextMillis(alarm))
   }
 
   override def onLocationChanged(location:Location){
@@ -117,8 +113,16 @@ class AlarmService extends Service with LocationListener{
   }
 
   // TODO
-  override def onProviderDisabled(provider:String){}
-  override def onProviderEnabled(provider:String){}
-  override def onStatusChanged(provider:String,status:Int,extras:Bundle){}
+  override def onProviderDisabled(provider:String){
+    Log.i(TAG, "Provider Disable: " + provider)
+  }
+
+  override def onProviderEnabled(provider:String){
+    Log.i(TAG, "Provider Enable: " + provider)
+  }
+
+  override def onStatusChanged(provider:String,status:Int,extras:Bundle){
+    Log.i(TAG, "Provider Status Change: " + provider + ":" + status.toString)
+  }
   
 }

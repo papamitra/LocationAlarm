@@ -4,7 +4,8 @@
 <EditTextPreference android:persistent="false" android:title="@string/label_pref" android:key="label"></EditTextPreference><Preference android:title="@string/location_pref" android:persistent="false" android:key="location"></Preference>
 
 
-<CheckBoxPreference android:key="ttl" android:title="@string/ttl" android:persistent="false"></CheckBoxPreference>
-<Preference android:key="start_time" android:title="@string/start_time" android:dependency="ttl" android:persistent="false"></Preference>
-<Preference android:dependency="ttl" android:persistent="false" android:title="@string/end_time" android:key="end_time"></Preference>
+
+<Preference android:key="start_time" android:title="@string/start_time" android:persistent="false"></Preference>
+
+<ListPreference android:persistent="false" android:key="min_list" android:entryValues="@array/min_list_entryvalues" android:entries="@array/min_list_entries" android:title="@string/min_list_title"></ListPreference>
 </PreferenceScreen>
