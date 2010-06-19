@@ -41,17 +41,6 @@ class AlarmAlert extends Activity{
     this.%[Button](R.id.dismiss).setOnClickListener(() => dismiss)
 
     registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED))
-/*
-    new AlertDialog.Builder(this)
-      .setTitle("Location Alert")
-      .setMessage("")
-      .setPositiveButton("OK", new DialogInterface.OnClickListener(){
-	override def onClick(dialog: DialogInterface, whichButton:Int){
-	  dismiss
-	}
-      })
-      .show()
-*/
   }
 
   override def onStop(){
