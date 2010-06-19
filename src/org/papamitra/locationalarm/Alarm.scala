@@ -82,6 +82,7 @@ class Alarm(c:Cursor){
 
   def isActiveAt(nowMillis:Long):Boolean = enabled match {
     case false => false
+    case true if nextmillis > nowMillis => false
     case true => ttl.isInTimeRange(nowMillis)
   }
 }
