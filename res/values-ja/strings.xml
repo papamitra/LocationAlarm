@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="min_list_title">活動時間(分)</string>
+    
+    
+    <string name="start_time">開始時刻</string>
+    <string name="location_picker">Location Picker</string>
+    <string name="set_alarm">Set Alarm</string>
+    <string name="location_pref">場所</string>
+    <string name="label_pref">ラベル</string>
+    <string name="app_name">目的地アラーム</string>
+<string name="map_ok">OK</string>
+<string name="map_cancel">Cancel</string>
+<string name="done">決定</string>
+<string name="revert">取り消し</string>
+<string name="alarm_alert_dismiss_text">アラームストップ</string>
+<string name="alarm_alert">Alert</string>
+</resources>

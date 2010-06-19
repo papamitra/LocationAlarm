@@ -112,6 +112,13 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
       }
     })
 
+    mMinList.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener(){
+      def onPreferenceChange(p:Preference, newValue:Any):Boolean={
+	mMinList.setSummary(newValue.asInstanceOf[String])
+	return true
+      }
+    })
+
     Alarms.getAlarm(getContentResolver, id) match {
       case Some(alarm) => 
 	setLocationPref(alarm)
@@ -122,9 +129,10 @@ class SetAlarm extends PreferenceActivity with ActivityResultTrait{
 
 	mStartHour = alarm.ttl.shour
 	mStartMinute = alarm.ttl.sminute
-	mStartTime.setSummary(format("%d:%02d", mStartHour, mStartMinute))
 
+	mStartTime setSummary format("%d:%02d", mStartHour, mStartMinute)
 	mMinList setValue alarm.ttl.min.toString
+	mMinList setSummary alarm.ttl.min.toString
 
 	mInitialized = alarm.initialized
       case _ => 

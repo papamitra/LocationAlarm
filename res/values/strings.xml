@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="min_list_title">Activity Time(min)</string>
-    <string name="ttl">Time To Live</string>
-    <string name="end_time">End Time</string>
+    
+    
     <string name="start_time">Start Time</string>
     <string name="location_picker">Location Picker</string>
     <string name="set_alarm">Set Alarm</string>
