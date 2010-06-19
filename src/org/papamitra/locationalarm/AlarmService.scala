@@ -1,7 +1,7 @@
 
 package org.papamitra.locationalarm
 
-import android.app.Service
+import android.app.{Service, KeyguardManager}
 import android.content.{Context, Intent, IntentFilter, BroadcastReceiver}
 import android.os.{Handler, IBinder, Bundle}
 import android.location.{Location,LocationListener, LocationManager}
@@ -18,11 +18,18 @@ class AlarmService extends Service with LocationListener{
 
   private lazy val alertReceiver = new BroadcastReceiver(){
     override def onReceive(context:Context, intent:Intent){
-      val alarmAlert = new Intent(context, classOf[AlarmAlert])
+
+      val km = context.getSystemService(Context.KEYGUARD_SERVICE).asInstanceOf[KeyguardManager]
+      val alarmAlert = km.inKeyguardRestrictedInputMode match{
+	case true =>
+	  new Intent(context, classOf[AlarmAlertFullScreen])
+	case false =>
+	  new Intent(context, classOf[AlarmAlert])
+      }
+
       alarmAlert.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
 			  | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
       context.startActivity(alarmAlert)
-
       context.startService(new Intent(context, classOf[AlarmKlaxon]))
     }
   }
